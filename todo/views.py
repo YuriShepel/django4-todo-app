@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.forms import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from .forms import TodoForm
+from .models import Todo
 
 
 def home(request):
@@ -51,5 +53,45 @@ def logout_user(request):
         return redirect('home')
 
 
+def create_todo(request):
+    if request.method == 'GET':
+        context = {'form': TodoForm()}
+        return render(request, 'todo/create_todo.html', context)
+    else:
+        try:
+            form = TodoForm(request.POST)
+            new_todo = form.save(commit=False)
+            new_todo.user = request.user
+            new_todo.save()
+            return redirect('current_todos')
+        except ValueError:
+            context = {'form': TodoForm(),
+                       'error': 'Bad data passed in', }
+            return render(request, 'todo/create_todo.html', context)
+
+
 def current_todos(request):
-    return render(request, 'todo/current_todos.html')
+    todos = Todo.objects.filter(user=request.user, datecompleted__isnull=True)
+    context = {'todos': todos}
+    return render(request, 'todo/current_todos.html', context)
+
+
+def view_todo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'GET':
+        form = TodoForm(instance=todo)
+        context = {'todo': todo,
+                   'form': form,
+                   }
+        return render(request, 'todo/view_todo.html', context)
+    else:
+        try:
+            form = TodoForm(request.POST, instance=todo)
+            form.save()
+            return redirect('current_todos')
+        except ValueError:
+            context = {'todo': todo,
+                       'form': form,
+                       'error': 'Bad info'
+                       }
+            return render(request, 'todo/view_todo.html', context)

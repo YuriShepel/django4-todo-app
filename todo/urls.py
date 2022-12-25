@@ -9,6 +9,8 @@ urlpatterns = [
     path('login/', views.login_user, name='login_user'),
     path('logout/', views.logout_user, name='logout_user'),
     # Todos
-    path('current/', views.current_todos, name='current_todos'),
     path('', views.home, name='home'),
+    path('create', views.create_todo, name='create_todo'),
+    path('current/', views.current_todos, name='current_todos'),
+    path('todo/<int:todo_pk>/', views.view_todo, name='view_todo'),
 ]
