@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.forms import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from django.utils import timezone
 from .forms import TodoForm
 from .models import Todo
 
@@ -95,3 +96,18 @@ def view_todo(request, todo_pk):
                        'error': 'Bad info'
                        }
             return render(request, 'todo/view_todo.html', context)
+
+
+def complete_todo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.datecompleted = timezone.now()
+        todo.save()
+        return redirect('current_todos')
+
+
+def delete_todo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.delete()
+        return redirect('current_todos')
