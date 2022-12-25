@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.forms import User
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.utils import timezone
 from .forms import TodoForm
@@ -48,12 +49,14 @@ def login_user(request):
             return redirect('current_todos')
 
 
+@login_required
 def logout_user(request):
     if request.method == 'POST':
         logout(request)
         return redirect('home')
 
 
+@login_required
 def create_todo(request):
     if request.method == 'GET':
         context = {'form': TodoForm()}
@@ -71,12 +74,21 @@ def create_todo(request):
             return render(request, 'todo/create_todo.html', context)
 
 
+@login_required
 def current_todos(request):
     todos = Todo.objects.filter(user=request.user, datecompleted__isnull=True)
     context = {'todos': todos}
     return render(request, 'todo/current_todos.html', context)
 
 
+@login_required
+def completed_todos(request):
+    todos = Todo.objects.filter(user=request.user, datecompleted__isnull=False).order_by('-datecompleted')
+    context = {'todos': todos}
+    return render(request, 'todo/comleted_todos.html', context)
+
+
+@login_required
 def view_todo(request, todo_pk):
     todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
     if request.method == 'GET':
@@ -98,6 +110,7 @@ def view_todo(request, todo_pk):
             return render(request, 'todo/view_todo.html', context)
 
 
+@login_required
 def complete_todo(request, todo_pk):
     todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
     if request.method == 'POST':
@@ -106,6 +119,7 @@ def complete_todo(request, todo_pk):
         return redirect('current_todos')
 
 
+@login_required
 def delete_todo(request, todo_pk):
     todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
     if request.method == 'POST':

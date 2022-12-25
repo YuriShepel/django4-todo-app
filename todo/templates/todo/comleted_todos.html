@@ -1,8 +1,7 @@
 {% extends 'todo/base.html' %}
 
-
 {% block content %}
-    Current todos:
+    Completed todos:
 <ul>
     {% for todo in todos %}
         <li>
@@ -13,6 +12,7 @@
             {% if todo.memo %}
                 - {{ todo.memo }}
             {% endif %}
+            {{ todo.datecompleted|date:'j M Y H:i' }}
             </a>
         </li>
 
