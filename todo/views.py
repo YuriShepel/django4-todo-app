@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.forms import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
+from django.db import IntegrityError, Error
 from django.utils import timezone
 from .forms import TodoForm
 from .models import Todo
@@ -24,9 +24,9 @@ def signup_user(request):
                 user.save()
                 login(request, user)
                 return redirect('current_todos')
-            except IntegrityError:
+            except (IntegrityError, ValueError):
                 context = {'form': UserCreationForm(),
-                           'error': 'This name already exists'}
+                           'error': 'This name already exists or input fields are empty'}
                 return render(request, 'todo/signup_user.html', context)
         else:
             context = {'form': UserCreationForm(),
